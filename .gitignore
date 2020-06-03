@@ -1,0 +1,8 @@
+.vs/
+**/Debug/
+**/Release/
+*.lss
+*.map
+*.obj
+*.tmp
+avrdude.*

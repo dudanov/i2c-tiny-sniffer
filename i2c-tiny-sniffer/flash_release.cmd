@@ -1,0 +1,1 @@
+avrdude -c usbasp -p t2313 -B50 -U lfuse:w:0xFD:m -U hfuse:w:0xCF:m -U efuse:w:0xFF:m -U flash:w:Release\i2c-tiny-sniffer.hex
