@@ -44,8 +44,8 @@
     out   PORTD, tmp            ; [1]
     ; set global registers
     ldi   st_val, 0xE0          ; [1]
-    ldi   nb_val, 0x6E          ; [1]
-    ldi   ack_val, 0x60         ; [1]
+    ldi   nb_val, 0x4E          ; [1]
+    ldi   ack_val, 0x40         ; [1]
     ldi   sp_val, 0x20          ; [1]
     ldi   st_sym, '#'           ; [1]
     ldi   sp_sym, '!'           ; [1]
@@ -55,12 +55,9 @@
     ldi   YH, 0x00              ; [1]
     ldi   ZH, 0x01              ; [1]
     ; setup USART to TX mode: 7N1 @1Mbps
-    ldi   tmp, (1 << U2X)       ; [1]
-    out   UCSRA, tmp            ; [1]
-    ldi   tmp, (1 << TXEN)      ; [1]
-    out   UCSRB, tmp            ; [1]
-    ldi   tmp, (0b10 << UCSZ0)  ; [1]
-    out   UCSRC, tmp            ; [1]
+    sbi   UCSRA, U2X            ; [2]
+    sbi   UCSRB, TXEN           ; [2]
+    sbi   UCSRC, UCSZ1          ; [2]
     ; setup USI to I2C mode: SCL stretch on START and OVF
     ldi   tmp, 0b00111100       ; [1]
     out   USICR, tmp            ; [1]
@@ -74,13 +71,14 @@ loop:
     wdr                         ; [1] reset watchdog timer
     ; ### USI START CONDITION BLOCK ###
     sbis  USISR, USISIF         ; [2][1]
-    rjmp  PC+5                  ; [0][2] -> skip block
+    rjmp  PC+6                  ; [0][2] -> skip block
     ; start condition detected. waiting for pull-down SCL by master
     sbic  PINB, PINB7           ; [2][1] <-
     rjmp  PC-1                  ; [0][2] ->
     ; SCL is pull-down
     out   USISR, st_val         ; [1] reset all flags and counter. release SCL
     st    X+, st_sym            ; [2] put start symbol to queue
+    rjmp  usart_block           ; [2] -> skip USI blocks, all flags cleared
     
     ; ### USI COUNTER OVERFLOW BLOCK ###
     sbis  USISR, USIOIF         ; [2][1]
@@ -108,6 +106,7 @@ loop:
     out   USISR, sp_val         ; [1] reset stop flag
     st    X+, sp_sym            ; [2] put stop symbol to USART TX queue
 
+usart_block:
     ; ### USART TX BLOCK ###
     cpse  XL, YL                ; [1][1][2]
     sbis  UCSRA, UDRE           ; [2][1][0]
