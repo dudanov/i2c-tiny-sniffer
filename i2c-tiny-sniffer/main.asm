@@ -78,7 +78,7 @@ loop:
     ; SCL is pull-down
     out   USISR, st_val         ; [1] reset all flags and counter. release SCL
     st    X+, st_sym            ; [2] put start symbol to queue
-    rjmp  usart_block           ; [2] -> skip USI blocks, all flags cleared
+    rjmp  usart_tx              ; [2] -> skip USI blocks, all flags cleared
     
     ; ### USI COUNTER OVERFLOW BLOCK ###
     sbis  USISR, USIOIF         ; [2][1]
@@ -106,9 +106,9 @@ loop:
     out   USISR, sp_val         ; [1] reset stop flag
     st    X+, sp_sym            ; [2] put stop symbol to USART TX queue
 
-usart_block:
     ; ### USART TX BLOCK ###
     cpse  XL, YL                ; [1][1][2]
+usart_tx:
     sbis  UCSRA, UDRE           ; [2][1][0]
     rjmp  loop                  ; [0][2][2] -> queue empty or tx is busy
     ld    tmp, Y+               ; [2]
