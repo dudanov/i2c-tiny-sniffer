@@ -6,6 +6,6 @@
   - Output data in ASCII code from USART (start: `#`, stop: `!`) @1Mbps 7N1 (1/8 of MCU clock frequency)
   - Pins: PB5: I2C SDA, PB7: I2C SCL, PD1: USART TX
 
-![Connections](images\schema.png)
+![Connections](images/schema.png)
 
 Project for AtmelStudio 7.0 IDE.
