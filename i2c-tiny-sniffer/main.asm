@@ -27,9 +27,9 @@
 ; # GLOBAL REGISTERS
 .def tmp            = r16   ; temporary register
 .def st_val         = r17   ; const 0xE0
-.def nb_val         = r18   ; const 0x6E
-.def ack_val        = r19   ; const 0x60
-.def sp_val         = r20   ; const 0xE0
+.def nb_val         = r18   ; const 0x4E
+.def ack_val        = r19   ; const 0x40
+.def sp_val         = r20   ; const 0x20
 .def st_sym         = r21   ; const '#'
 .def sp_sym         = r22   ; const '!'
 
@@ -40,7 +40,7 @@
     ; pull-up unused pins
     ldi   tmp, 0b111            ; [1]
     out   PORTA, tmp            ; [1]
-    ldi   tmp, 0b1111111        ; [1]
+    ldi   tmp, 0b1111101        ; [1]
     out   PORTD, tmp            ; [1]
     ; set global registers
     ldi   st_val, 0xE0          ; [1]
@@ -61,12 +61,12 @@
     ; setup USI to I2C mode: SCL stretch on START and OVF
     ldi   tmp, 0b00111100       ; [1]
     out   USICR, tmp            ; [1]
-    ; setup PORTB (unused, SDA and SCL pins)
+    ; setup PORTB (unused and SCL pins)
     ldi   tmp, 0b11011111       ; [1]
     out   PORTB, tmp            ; [1]
     sbi   DDRB, DDB7            ; [2]
 
-loop:
+_loop:
     ; ### MAIN PROGRAM LOOP ###
     wdr                         ; [1] reset watchdog timer
     ; ### USI START CONDITION BLOCK ###
@@ -78,11 +78,11 @@ loop:
     ; SCL is pull-down
     out   USISR, st_val         ; [1] reset all flags and counter. release SCL
     st    X+, st_sym            ; [2] put start symbol to queue
-    rjmp  usart_tx              ; [2] -> skip USI blocks, all flags cleared
+    rjmp  _usart + 1            ; [2] -> skip
     
     ; ### USI COUNTER OVERFLOW BLOCK ###
     sbis  USISR, USIOIF         ; [2][1]
-    rjmp  PC+11                 ; [0][2] -> skip block
+    rjmp  PC+12                 ; [0][2] -> skip block
     ; counter is overflowed. new byte received
     out   USISR, nb_val         ; [1] reset flags. set counter to 14. release SCL
     ; take byte from USI buffer register
@@ -98,7 +98,8 @@ loop:
     rjmp  PC-1                  ; [0][2] ->
     ; (N)ACK received. ignoring it
     out   USISR, ack_val        ; [1] reset flags and counter. release SCL
-
+    rjmp  _usart + 1            ; [2] -> skip
+    
     ; ### USI STOP CONDITION BLOCK ###
     sbis  USISR, USIPF          ; [2][1]
     rjmp  PC+3                  ; [0][2] -> skip block
@@ -106,19 +107,19 @@ loop:
     out   USISR, sp_val         ; [1] reset stop flag
     st    X+, sp_sym            ; [2] put stop symbol to USART TX queue
 
+_usart:
     ; ### USART TX BLOCK ###
     cpse  XL, YL                ; [1][1][2]
-usart_tx:
     sbis  UCSRA, UDRE           ; [2][1][0]
-    rjmp  loop                  ; [0][2][2] -> queue empty or tx is busy
+    rjmp  _loop                 ; [0][2][2] -> queue empty or tx is busy
     ld    tmp, Y+               ; [2]
     out   UDR, tmp              ; [1] start tx. 64 clks before next UDRE
     cp    XL, YL                ; [1]
-    brne  loop                  ; [1][2] -> data in queue is available
+    brne  _loop                 ; [1][2] -> data in queue is available
     ; reset queue pointers to start address of SRAM
     ldi   XL, 0x60              ; [1]
     ldi   YL, 0x60              ; [1]
-    rjmp  loop                  ; [2] -> queue is reset
+    rjmp  _loop                 ; [2] -> queue is reset
 
 .org 0x80
 

@@ -35,6 +35,7 @@
   <avrasm.assembler.general.AdditionalIncludeDirectories>
     <ListValues>
       <Value>%24(PackRepoDir)\Atmel\ATtiny_DFP\1.4.308\avrasm\inc</Value>
+      <Value>%24(PackRepoDir)\Atmel\ATtiny_DFP\1.4.310\avrasm\inc</Value>
     </ListValues>
   </avrasm.assembler.general.AdditionalIncludeDirectories>
   <avrasm.assembler.general.IncludeFile>tn2313Adef.inc</avrasm.assembler.general.IncludeFile>
@@ -46,12 +47,13 @@
       <AvrAssembler>
   <avrasm.assembler.general.AdditionalIncludeDirectories>
     <ListValues>
-      <Value>%24(PackRepoDir)\Atmel\ATtiny_DFP\1.4.308\avrasm\inc</Value>
+      <Value>%24(PackRepoDir)\Atmel\ATtiny_DFP\1.4.310\avrasm\inc</Value>
     </ListValues>
   </avrasm.assembler.general.AdditionalIncludeDirectories>
   <avrasm.assembler.general.IncludeFile>tn2313Adef.inc</avrasm.assembler.general.IncludeFile>
 </AvrAssembler>
     </ToolchainSettings>
+    <OutputType>Executable</OutputType>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="main.asm">
