@@ -105,7 +105,7 @@ _loop:
     rjmp  PC+3                  ; [0][2] -> skip block
     ; stop condition detected
     out   USISR, sp_val         ; [1] reset stop flag
-    st    X+, sp_sym            ; [2] put stop symbol to USART TX queue
+    st    X+, sp_sym            ; [2] put stop symbol to queue
 
 _usart:
     ; ### USART TX BLOCK ###
@@ -113,7 +113,7 @@ _usart:
     sbis  UCSRA, UDRE           ; [2][1][0]
     rjmp  _loop                 ; [0][2][2] -> queue empty or tx is busy
     ld    tmp, Y+               ; [2]
-    out   UDR, tmp              ; [1] start tx. 64 clks before next UDRE
+    out   UDR, tmp              ; [1] start tx. next transmit through not less than 72 clks
     cp    XL, YL                ; [1]
     brne  _loop                 ; [1][2] -> data in queue is available
     ; reset queue pointers to start address of SRAM
